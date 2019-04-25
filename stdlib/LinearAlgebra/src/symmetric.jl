@@ -890,3 +890,38 @@ end
 *(A::Adjoint{<:Any,<:RealHermSymComplexHerm}, B::Transpose{<:Any,<:AbstractTriangular}) = A.parent * B
 *(A::Transpose{<:Any,<:RealHermSymComplexSym}, B::Adjoint{<:Any,<:AbstractTriangular}) = A.parent * B
 *(A::Transpose{<:Any,<:RealHermSymComplexSym}, B::Transpose{<:Any,<:AbstractTriangular}) = A.parent * B
+
+"""
+    symmetrize!(X::AbstractMatrix{<:AbstractFloat})
+
+Make the matrix `X` symmetric in-place using the formula `(X + X') / 2`.
+
+See also: [`symmetrize`](@ref)
+
+!!! compat "Julia 1.3"
+    This function requires Julia 1.3 or later.
+"""
+function symmetrize!(X::AbstractMatrix{<:AbstractFloat})
+    require_one_based_indexing(X)
+    n = checksquare(X)
+    @inbounds for j = 2:n, i = 1:j-1
+        X[i,j] = (X[i,j] + X[j,i]) / 2
+        X[j,i] = X[i,j]
+    end
+    X
+end
+
+"""
+    symmetrize(X::AbstractMatrix)
+
+Construct a symmetric matrix based on `X` using the formula `(X + X') / 2`.
+This function is a no-op for [`Symmetric`](@ref)-wrapped matrices.
+
+See also: [`symmetrize!`](@ref)
+
+!!! compat "Julia 1.3"
+    This function requires Julia 1.3 or later.
+"""
+symmetrize(X::AbstractMatrix{<:AbstractFloat}) = symmetrize!(copy(X))
+symmetrize(X::AbstractMatrix{<:Real}) = symmetrize!(float(X))
+symmetrize(X::Symmetric) = X

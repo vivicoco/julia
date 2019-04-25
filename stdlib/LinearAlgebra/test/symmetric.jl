@@ -603,4 +603,26 @@ end
     @test LinearAlgebra.hermitian_type(Int) == Int
 end
 
+@testset "symmetrize" begin
+    @testset "in-place" begin
+        X = rand(Float32, 4, 4)
+        Y = copy(X)
+        symmetrize!(X)
+        @test X ≈ (Y + Y') / 2
+        @test issymmetric(X)
+    end
+    @testset "out-of-place" begin
+        X = randn(Float32, 4, 4)
+        Y = symmetrize(X)
+        @test Y ≈ (X + X') / 2
+        @test issymmetric(Y)
+        X = Int32[1 2 3; 4 5 6; 7 8 9]
+        @test symmetrize(X) ≈ Float32[1 3 5; 3 5 7; 5 7 9]
+    end
+    @testset "Symmetric" begin
+        S = Symmetric([1 2; 2 1])
+        @test symmetrize(S) === S
+    end
+end
+
 end # module TestSymmetric
